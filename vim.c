@@ -50,4 +50,19 @@ typedef enum
     MODE_INSERT,
     MODE_COMMAND
 } Mode;
+// Global variables
+Content* buffer;
+Mode mode = MODE_VISUAL;
 
+/**
+ * @brief Get the window position
+ * 
+ * @return Position
+ */
+Position getWindowPosition()
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    Position p = {csbi.srWindow.Right - csbi.srWindow.Left + 1, csbi.srWindow.Bottom - csbi.srWindow.Top + 1};
+    return p;
+}
