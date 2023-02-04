@@ -111,3 +111,12 @@ unsigned int getRows()
     Position p = getWindowPosition();
     return p.y;
 }
+/**
+ * @brief Clear the screen
+ *
+ * @return void
+ */
+void clearScreen()
+{
+    system("cls");
+}
