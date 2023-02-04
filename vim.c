@@ -152,3 +152,197 @@ void printCenter(char* text)
     setCursorPosition(center.x, center.y);
     printf("%s", text);
 }
+void printAt(char* text, int row)
+{
+    int length = strlen(text);
+    if (length == 0) return;
+
+    setCursorPosition(0, row);
+
+    printf("%s", text);
+}
+
+void printCenterAt(char* text, int row)
+{
+    int length = strlen(text);
+    if (length == 0) return;
+
+    Position center = getCenter();
+
+    int x = center.x - (length / 2);
+    setCursorPosition(x, row);
+
+    printf("%s", text);
+}
+
+/**
+ * @brief Print the welcome message
+ * 
+ * @return void
+ */
+void printWelcomeMessage()
+{
+    Position center = getCenter();
+
+    printCenterAt("Welcome to MyEditor!", center.y);
+
+    printCenterAt("Press Ctrl + Q to quit.", center.y + 1);
+}
+
+void changeMode(Mode mode)
+{
+    switch (mode) {
+        case MODE_COMMAND:
+            printAt("Command mode", 0);
+            break;
+        case MODE_VISUAL:
+            printAt("Visual mode", 0);
+            break;
+        case MODE_INSERT:
+            printAt("Insert mode", 0);
+            break;
+        default:
+            break;
+    }
+}
+
+void fileMove(int x, int y)
+{
+    return;
+
+    Position p = getCursorPosition();
+    int columns = getColumns();
+    int rows = getRows();
+
+    if (x < 0) x = 0;
+    if (x > columns) x = columns;
+
+    if (y < 0) y = 0;
+    if (y > rows) y = rows;
+
+    setCursorPosition(x, y);
+}
+
+void printContent()
+{
+    int columns = getColumns();
+    int rows = getRows() - 2;
+    setCursorPosition(0, 2);
+
+    int line_count = buffer->line_count;
+    char** lines = buffer->lines;
+
+    for (int i = 0; i < line_count; i++) {
+        char* line = lines[i];
+        int length = strlen(line);
+
+        if (length > columns) {
+            char* line2 = malloc(sizeof(char)*columns);
+            strncpy(line2, line, columns);
+            line2[columns] = '\0';
+            printf("%s\n", line2);
+            free(line2);
+        } else {
+            printf("%s\n", line);
+        }
+    }
+
+    for (int i = line_count; i < rows; i++) {
+        printf("\n");
+    }
+
+    setCursorPosition(0, 2);
+}
+
+void printToolbar()
+{
+    if (buffer == NULL) printCenterAt("Welcome", 0);
+    else printCenterAt(buffer->name, 0);
+    printf("\n");
+}
+
+void printSubToolbar()
+{
+    printf("\n");
+}
+
+// example: skip_string("max base", 3+1) -> "base")
+char* skip_string(char* input, int length)
+{
+    length++;
+
+    int original_length = strlen(input);
+    if (length > original_length) return NULL;
+
+    char* output = malloc(sizeof(char)*(original_length - length + 1));
+    strcpy(output, input + length);
+    return output;
+}
+
+int fileExists(char* filename)
+{
+    FILE* file = fopen(filename, "r");
+    if (file == NULL) return 0;
+    fclose(file);
+    return 1;
+}
+
+void openFileContent(char* filename)
+{
+    if (buffer != NULL) {
+        free(buffer);
+        buffer = NULL;
+    }
+
+    if (fileExists(filename) == 0) return;
+
+    FILE* file = fopen(filename, "r");
+    if (file == NULL) return;
+
+    buffer = malloc(sizeof(Content));
+    buffer->name = filename;
+    buffer->line_count = 0;
+    buffer->lines = NULL;
+
+    char line[1024];
+    while (fgets(line, sizeof(line), file)) {
+        int length = strlen(line);
+        if (length > 0) {
+            if (line[length - 1] == '\n') {
+                line[length - 1] = '\0';
+            }
+
+            buffer->line_count++;
+            buffer->lines = realloc(buffer->lines, sizeof(char*)*buffer->line_count);
+            buffer->lines[buffer->line_count - 1] = malloc(sizeof(char)*length);
+            strcpy(buffer->lines[buffer->line_count - 1], line);
+
+            printf("%s\n", line);
+        }
+    }
+
+    fclose(file);
+}
+
+void saveContent()
+{
+    if (buffer == NULL) return;
+
+    FILE* file = fopen(buffer->name, "w");
+    if (file == NULL) return;
+
+    int line_count = buffer->line_count;
+    char** lines = buffer->lines;
+
+    for (int i = 0; i < line_count; i++) {
+        char* line = lines[i];
+        fprintf(file, "%s\n", line);
+    }
+
+    fclose(file);
+}
+
+void clearLine()
+{
+    printf("\33[2K\r");
+}
