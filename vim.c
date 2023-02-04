@@ -78,3 +78,16 @@ Position getCursorPosition()
     Position p = {csbi.dwCursorPosition.X, csbi.dwCursorPosition.Y};
     return p;
 }
+/**
+ * @brief Set the cursor position
+ * 
+ * @param x
+ * @param y
+ */
+void setCursorPosition(unsigned int x, unsigned int y)
+{
+    COORD c;
+    c.X = x;
+    c.Y = y;
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), c);
+}
