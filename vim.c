@@ -138,3 +138,17 @@ Position getCenter()
     Position p = {x, y};
     return p;
 }
+/**
+ * @brief Print in the center of the screen
+ * 
+ * @param text
+ * 
+ * @return void
+ */
+void printCenter(char* text)
+{
+    Position center = getCenter();
+
+    setCursorPosition(center.x, center.y);
+    printf("%s", text);
+}
