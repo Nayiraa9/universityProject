@@ -101,3 +101,13 @@ unsigned int getColumns()
     Position p = getWindowPosition();
     return p.x;
 }
+/**
+ * @brief Get the number of rows
+ * 
+ * @return unsigned int
+ */
+unsigned int getRows()
+{
+    Position p = getWindowPosition();
+    return p.y;
+}
