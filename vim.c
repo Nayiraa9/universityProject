@@ -91,3 +91,13 @@ void setCursorPosition(unsigned int x, unsigned int y)
     c.Y = y;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), c);
 }
+/**
+ * @brief Get the number of columns
+ * 
+ * @return unsigned int
+ */
+unsigned int getColumns()
+{
+    Position p = getWindowPosition();
+    return p.x;
+}
