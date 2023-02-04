@@ -66,3 +66,15 @@ Position getWindowPosition()
     Position p = {csbi.srWindow.Right - csbi.srWindow.Left + 1, csbi.srWindow.Bottom - csbi.srWindow.Top + 1};
     return p;
 }
+/**
+ * @brief Get the current cursor Position
+ * 
+ * @return Position
+ */
+Position getCursorPosition()
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    Position p = {csbi.dwCursorPosition.X, csbi.dwCursorPosition.Y};
+    return p;
+}
