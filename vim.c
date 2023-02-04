@@ -346,3 +346,197 @@ void clearLine()
 {
     printf("\33[2K\r");
 }
+/**
+ * @brief Main function
+ * 
+ * @param argc
+ * @param argv
+ * 
+ * @return int
+ */
+int main(int argc, char** argv)
+{
+    buffer = NULL;
+
+    // buffer = malloc(sizeof(Content));
+    // buffer->name = malloc(sizeof(char)*124);
+    // buffer->content = malloc(sizeof(char)*10240);
+    // buffer->lines = malloc(sizeof(char*)*124);
+    // for (int i = 0; i < 124; i++) {
+    //     buffer->lines[i] = malloc(sizeof(char)*1024);
+    // }
+    // buffer->line_count = 0;
+    // strcpy(buffer->name, "Untitled");
+    // strcpy(buffer->content, "Hello World!");
+    // buffer->lines[0] = buffer->content;
+    // buffer->line_count++;
+
+    int x = 0;
+    int y = 2;
+    int prev_x = 0;
+    int prev_y = 2;
+    Mode prev_mode = mode;
+
+    char *command_response = malloc(sizeof(char) * 100);
+    command_response[0] = '\0';
+
+    while (1) {
+        clearScreen();
+        changeMode(mode);
+        printToolbar();
+        if (command_response[0] == '\0') printSubToolbar();
+        else printf("%s\n", command_response);
+
+        if (buffer == NULL) printWelcomeMessage();
+        else printContent();
+
+        if (mode == MODE_COMMAND) {
+            setCursorPosition(0, 1);
+            printf(":");
+        } else {
+            setCursorPosition(x, y);
+        }
+
+        int ch = getch();
+
+        if (mode == MODE_COMMAND) {
+            char *command = malloc(sizeof(char) * 100);
+            int command_index = 0;
+            clearLine();
+            while (ch != 13 && ch != 27) {
+                // Handling backspace
+                if (ch == 127) {
+                    if (command_index > 0) {
+                        command[command_index] = '\0';
+                        command_index--;
+
+                        clearLine();
+                        printf("%s\n", command);
+                    }
+                } else {
+                    command[command_index++] = ch;
+                    printf("%c", ch);
+                }
+                ch = getch();
+            }
+            command[command_index] = '\0';
+            char* cache = NULL;
+            
+            if (command_index > 0) {
+                cache = malloc(sizeof(char) * 100);
+                strcpy(cache, command);
+            }
+
+            char* first_command = strtok(command, " ");
+            char* second_command = skip_string(cache, strlen(first_command));
+            int is_new = 0;
+
+            if (strcmp(first_command, "") == 0 || first_command == NULL) {
+                // setCursorPosition(0, 1);
+                // clearLine();
+                // printf("Error: Command not found");
+                strcpy(command_response, "Error: Command not found");
+            }
+            else if (strcmp(first_command, "exit") == 0 || strcmp(first_command, "q") == 0 || strcmp(first_command, "quit") == 0) {
+                break;
+            }
+            else if (strcmp(first_command, "open") == 0) {
+                setCursorPosition(0, 1);
+
+                if (strcmp(second_command, "") == 0) {
+                    // clearLine();
+                    // printf("Error: No file specified");
+                    strcpy(command_response, "Error: No file specified");
+                } else {
+                    if (fileExists(second_command)) {
+                        openFileContent(second_command);
+                        is_new = 1;
+                    } else {
+                        // clearLine();
+                        // printf("Error: File not found");
+                        strcpy(command_response, "Error: File not found");
+                    }
+                }
+            }
+            else if (strcmp(first_command, "save") == 0) {
+                if (buffer == NULL) {
+                    // setCursorPosition(0, 1);
+                    // clearLine();
+                    // printf("Error: No buffer to save");
+                    strcpy(command_response, "Error: No buffer to save");
+                } else {
+                    saveContent();
+
+                    // clearLine();
+                    // printf("Saved");
+                    strcpy(command_response, "Saved");
+                }
+            } else {
+                setCursorPosition(0, 1);
+                clearLine();
+                printf("%s.\n%s.\n", first_command, second_command);
+                break;
+            }
+
+            if (is_new == 0) {
+                mode = prev_mode;
+                x = prev_x;
+                y = prev_y;
+            } else {
+                mode = MODE_INSERT;
+                x = 0;
+                y = 2;
+            }
+            setCursorPosition(x, y);
+        }
+        else if (mode == MODE_INSERT) {
+            if (ch == 13) printf("\n");
+            else if (ch >= 32 && ch <= 126) printf("%c", ch);
+        }
+        else if (mode == MODE_VISUAL) {
+
+        }
+
+        // Handling keys with GetAsyncKeyState
+        if (GetAsyncKeyState(VK_CONTROL) && GetAsyncKeyState('Q')) {
+            break;
+        }
+        else if (GetAsyncKeyState(VK_ESCAPE)) {
+            prev_mode = mode;
+            mode = MODE_COMMAND;
+        }
+        else if (GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(0x56)) {
+            prev_mode = mode;
+            mode = MODE_VISUAL;
+        }
+        else if (GetAsyncKeyState(VK_SHIFT) && GetAsyncKeyState(0xBA)) {
+            prev_mode = mode;
+            mode = MODE_COMMAND;
+            prev_x = x;
+            prev_y = y;
+            x = 0;
+            y = 1;
+        }
+        else if (buffer != NULL && GetAsyncKeyState(VK_LEFT)) {
+            if (x > 0) x--;
+            // fileMove(-1, 0);
+        }
+        else if (buffer != NULL && GetAsyncKeyState(VK_RIGHT)) {
+            x++;
+            // fileMove(1, 0);
+        }
+        else if (buffer != NULL && GetAsyncKeyState(VK_UP)) {
+            if (y > 2) y--;
+            // fileMove(0, -1);
+        }
+        else if (buffer != NULL && GetAsyncKeyState(VK_DOWN)) {
+            y++;
+            // fileMove(0, 1);
+        }
+        else if (mode == MODE_INSERT) {
+
+        }
+    }
+
+    return 0;
+}
