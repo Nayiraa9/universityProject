@@ -120,3 +120,21 @@ void clearScreen()
 {
     system("cls");
 }
+/**
+ * @brief Get center position of the screen
+ * 
+ * @return Position
+ */
+Position getCenter()
+{
+    Position size = getWindowPosition();
+
+    unsigned int columns = size.x;
+    unsigned int rows = size.y;
+
+    unsigned int x = columns / 2;
+    unsigned int y = rows / 2;
+
+    Position p = {x, y};
+    return p;
+}
